@@ -1,4 +1,6 @@
 name: Chimera
+options:
+  xcodeVersion: "15.0" # This fixes the 'Future Format' error
 targets:
   Chimera:
     type: application
@@ -7,6 +9,6 @@ targets:
     sources:
       - Chimera
     settings:
-      PRODUCT_BUNDLE_IDENTIFIER: com.chimera.ios
+      PRODUCT_BUNDLE_IDENTIFIER: com.baboo.chimera # Change this to something unique
       INFOPLIST_FILE: Chimera/Info.plist
       GENERATE_INFOPLIST_FILE: NO
