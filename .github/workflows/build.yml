@@ -10,8 +10,12 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Project
-        # We force the project generation here
         run: xcodegen generate
+
+      - name: Fix Compatibility
+        # This command forces the project file to be readable by older Xcode versions
+        run: |
+          sed -i '' 's/objectVersion = [0-9]*/objectVersion = 54/g' Chimera.xcodeproj/project.pbxproj
 
       - name: Build IPA
         run: |
@@ -22,12 +26,3 @@ jobs:
                      archive -archivePath Chimera.xcarchive \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO
-                     -destination 'generic/platform=iOS'
-
-      - name: Export IPA
-        run: |
-          xcodebuild -exportArchive \
-                     -archivePath Chimera.xcarchive \
-                     -exportOptionsPlist ExportOptions.plist \
-                     -exportPath output \
-                     CODE_SIGNING_ALLOWED=NO
