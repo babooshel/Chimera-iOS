@@ -1,13 +1,11 @@
 name: Chimera
-options:
-  bundleIdPrefix: com.chimera
 targets:
   Chimera:
     type: application
     platform: iOS
     deploymentTarget: "16.0"
     sources:
-      - path: Chimera
+      - Chimera
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.chimera.ios
       INFOPLIST_FILE: Chimera/Info.plist
