@@ -15,5 +15,5 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.baboo.chimera
       INFOPLIST_FILE: Chimera/Info.plist
       GENERATE_INFOPLIST_FILE: NO
-      # Force compatibility with older Xcode versions
+      # Force the project file format to be compatible with Xcode 15.4
       LastUpgradeCheck: "1500"
