@@ -22,6 +22,7 @@ jobs:
                      archive -archivePath Chimera.xcarchive \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO
+                     -destination 'generic/platform=iOS'
 
       - name: Export IPA
         run: |
