@@ -1,7 +1,7 @@
 name: Chimera
 options:
-  bundleIdPrefix: com.baboo
-  xcodeVersion: "15.0"
+  # This tells XcodeGen to use a very old, stable project format
+  xcodeVersion: "13.0" 
   deploymentTarget:
     iOS: "16.0"
 targets:
@@ -15,5 +15,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.baboo.chimera
       INFOPLIST_FILE: Chimera/Info.plist
       GENERATE_INFOPLIST_FILE: NO
-      # Force the project file format to be compatible with Xcode 15.4
-      LastUpgradeCheck: "1500"
+      # Force internal project compatibility
+      LAST_UPGRADE_CHECK: "1300"
+      # This kills the Format 77 error
+      COMBINE_HIDPI_IMAGES: NO
