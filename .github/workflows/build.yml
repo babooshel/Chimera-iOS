@@ -5,12 +5,24 @@ jobs:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Project
+        # We added 'ls' to see if the file actually gets created
+        run: |
+          xcodegen generate
+          ls -R
+          
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
       - name: Build IPA
         run: |
-          xcodebuild -project Chimera.xcodeproj -scheme Chimera -sdk iphoneos -configuration Release archive -archivePath Chimera.xcarchive
-          xcodebuild -exportArchive -archivePath Chimera.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath output
+          xcodebuild -project Chimera.xcodeproj -scheme Chimera -sdk iphoneos -configuration Release archive -archivePath Chimera.xcarchive CODE_SIGNING_ALLOWED=NO
+          xcodebuild -exportArchive -archivePath Chimera.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath output CODE_SIGNING_ALLOWED=NO
+          
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
