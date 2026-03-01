@@ -10,21 +10,24 @@ jobs:
         run: brew install xcodegen
 
       - name: Generate Project
-        # We added 'ls' to see if the file actually gets created
-        run: |
-          xcodegen generate
-          ls -R
-          
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+        run: xcodegen generate
 
       - name: Build IPA
         run: |
-          xcodebuild -project Chimera.xcodeproj -scheme Chimera -sdk iphoneos -configuration Release archive -archivePath Chimera.xcarchive CODE_SIGNING_ALLOWED=NO
-          xcodebuild -exportArchive -archivePath Chimera.xcarchive -exportOptionsPlist ExportOptions.plist -exportPath output CODE_SIGNING_ALLOWED=NO
-          
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: Chimera-Alpha
-          path: output/*.ipa
+          # The -allowProvisioningDeviceRegistration flag helps bypass some cloud errors
+          xcodebuild -project Chimera.xcodeproj \
+                     -scheme Chimera \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     archive -archivePath Chimera.xcarchive \
+                     CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_REQUIRED=NO \
+                     AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+                     -archivePath Chimera.xcarchive \
+                     -exportOptionsPlist ExportOptions.plist \
+                     -exportPath output \
+                     CODE_SIGNING_ALLOWED=NO
