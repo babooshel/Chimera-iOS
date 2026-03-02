@@ -1,7 +1,7 @@
 name: Chimera
 options:
-  # Setting this to 12.0 forces the oldest possible project spec (Version 53)
-  xcodeVersion: "12.0"
+  bundleIdPrefix: com.baboo
+  xcodeVersion: "13.0"
   deploymentTarget:
     iOS: "16.0"
 targets:
@@ -11,7 +11,13 @@ targets:
     deploymentTarget: "16.0"
     sources:
       - Chimera
+    dependencies:
+      - framework: Frameworks/MoltenVK.xcframework
+      - sdk: libsqlite3.tbd
+      - sdk: libz.tbd
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.baboo.chimera
       INFOPLIST_FILE: Chimera/Info.plist
       GENERATE_INFOPLIST_FILE: NO
+      LIBRARY_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
+      OTHER_LDFLAGS: $(inherited) -lFEXCore
