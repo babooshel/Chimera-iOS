@@ -6,15 +6,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
+      - name: Install Dependencies
+        run: brew install xcodegen cmake
+
+      - name: Build FEX Core (The Brain)
+        run: |
+          git clone --recurse-submodules https://github.com/FEX-Emu/FEX.git
+          cd FEX
+          mkdir Build && cd Build
+          cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DBUILD_TESTING=OFF
+          make -j$(sysctl -n hw.ncpu) FEXCore
+          mkdir -p ../../Frameworks
+          cp libFEXCore.a ../../Frameworks/
 
       - name: Generate Project
-        run: xcodegen generate
-
-      - name: Fix Compatibility
-        # This command forces the project file to be readable by older Xcode versions
         run: |
+          xcodegen generate
+          # Force compatibility to avoid Format 77 error
           sed -i '' 's/objectVersion = [0-9]*/objectVersion = 54/g' Chimera.xcodeproj/project.pbxproj
 
       - name: Build IPA
@@ -25,4 +33,13 @@ jobs:
                      -sdk iphoneos \
                      archive -archivePath Chimera.xcarchive \
                      CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO
+                     CODE_SIGNING_REQUIRED=NO \
+                     AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+                     -archivePath Chimera.xcarchive \
+                     -exportOptionsPlist ExportOptions.plist \
+                     -exportPath output \
+                     CODE_SIGNING_ALLOWED=NO
