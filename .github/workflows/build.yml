@@ -9,37 +9,34 @@ jobs:
       - name: Install Dependencies
         run: brew install xcodegen cmake
 
-      - name: Build FEX Core (The Brain)
+      - name: Unzip MoltenVK
+        run: |
+          cd Frameworks
+          unzip MoltenVK.xcframework.zip
+          # We keep it organized for the compiler
+          rm MoltenVK.xcframework.zip
+          cd ..
+
+      - name: Build FEX Core
         run: |
           git clone --recurse-submodules https://github.com/FEX-Emu/FEX.git
           cd FEX
           mkdir Build && cd Build
+          # Compiling FEX for iOS ARM64
           cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DBUILD_TESTING=OFF
           make -j$(sysctl -n hw.ncpu) FEXCore
-          mkdir -p ../../Frameworks
           cp libFEXCore.a ../../Frameworks/
 
-      - name: Generate Project
+      - name: Generate and Build
         run: |
           xcodegen generate
-          # Force compatibility to avoid Format 77 error
+          # Fix Xcode project versioning
           sed -i '' 's/objectVersion = [0-9]*/objectVersion = 54/g' Chimera.xcodeproj/project.pbxproj
-
-      - name: Build IPA
-        run: |
+          
           xcodebuild -project Chimera.xcodeproj \
                      -scheme Chimera \
                      -configuration Release \
                      -sdk iphoneos \
                      archive -archivePath Chimera.xcarchive \
                      CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO \
-                     AD_HOC_CODE_SIGNING_ALLOWED=YES
-
-      - name: Export IPA
-        run: |
-          xcodebuild -exportArchive \
-                     -archivePath Chimera.xcarchive \
-                     -exportOptionsPlist ExportOptions.plist \
-                     -exportPath output \
-                     CODE_SIGNING_ALLOWED=NO
+                     CODE_SIGNING_REQUIRED=NO
