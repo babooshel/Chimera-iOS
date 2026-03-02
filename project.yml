@@ -1,23 +1,25 @@
 name: Chimera
 options:
   bundleIdPrefix: com.baboo
-  xcodeVersion: "13.0"
-  deploymentTarget:
-    iOS: "16.0"
+  xcodeVersion: "15.0" # Matches the Cloud Mac (macos-14 uses Xcode 15)
 targets:
   Chimera:
     type: application
     platform: iOS
     deploymentTarget: "16.0"
     sources:
-      - Chimera
+      - path: Chimera
     dependencies:
       - framework: Frameworks/MoltenVK.xcframework
-      - sdk: libsqlite3.tbd
-      - sdk: libz.tbd
+        embed: true
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.baboo.chimera
       INFOPLIST_FILE: Chimera/Info.plist
       GENERATE_INFOPLIST_FILE: NO
+      # Tell the app where to look for the FEX library (.a file)
       LIBRARY_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
-      OTHER_LDFLAGS: $(inherited) -lFEXCore
+      # Force link the FEX brain and necessary system libraries
+      OTHER_LDFLAGS: $(inherited) -lFEXCore -lsqlite3 -lz
+      # Required for JIT/StikDebug visibility
+      ENABLE_BITCODE: NO
+      SWIFT_VERSION: 5.0
