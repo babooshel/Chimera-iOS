@@ -11,25 +11,41 @@ jobs:
 
       - name: Unzip MoltenVK
         run: |
-          cd Frameworks
-          unzip MoltenVK.xcframework.zip
-          # Clean up the zip so it doesn't clutter the build
-          rm MoltenVK.xcframework.zip
-          cd ..
+          # Finds the zip even if it's in a subfolder or root
+          ZIP_PATH=$(find . -name "MoltenVK.xcframework.zip" | head -n 1)
+          if [ -z "$ZIP_PATH" ]; then echo "ZIP NOT FOUND"; exit 1; fi
+          mkdir -p Frameworks
+          unzip -o "$ZIP_PATH" -d Frameworks/
+          # Ensure the framework is at the expected path
+          mv Frameworks/MoltenVK.xcframework.zip_folder/MoltenVK.xcframework Frameworks/ 2>/dev/null || true
 
-      - name: Build FEX Core (The Brain)
+      - name: Build FEX Core (The Hack)
         run: |
           git clone --recurse-submodules https://github.com/FEX-Emu/FEX.git
           cd FEX
+          
+          # HACK: Force-enable iOS by deleting the restriction lines
+          sed -i '' '/Unsupported system type iOS/d' CMakeLists.txt
+          sed -i '' '/FEX only supports Linux and Windows/d' CMakeLists.txt
+          
           mkdir Build && cd Build
-          # Building specifically for the iPhone's ARM64 architecture
-          cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DBUILD_TESTING=OFF
+          # Tricking FEX into building with the iOS Toolchain
+          cmake .. \
+            -DCMAKE_SYSTEM_NAME=iOS \
+            -DCMAKE_OSX_SYSROOT=iphoneos \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DBUILD_TESTING=OFF \
+            -DENABLE_LTO=OFF \
+            -DENABLE_ASSERTIONS=OFF
+          
           make -j$(sysctl -n hw.ncpu) FEXCore
-          cp libFEXCore.a ../../Frameworks/
+          mkdir -p ../../Frameworks
+          cp FEXCore/libFEXCore.a ../../Frameworks/
 
-      - name: Generate and Build
+      - name: Assemble Chimera
         run: |
           xcodegen generate
+          # Ensure the project file is compatible with modern Xcode
           sed -i '' 's/objectVersion = [0-9]*/objectVersion = 54/g' Chimera.xcodeproj/project.pbxproj
           
           xcodebuild -project Chimera.xcodeproj \
