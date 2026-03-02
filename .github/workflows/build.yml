@@ -13,16 +13,16 @@ jobs:
         run: |
           cd Frameworks
           unzip MoltenVK.xcframework.zip
-          # We keep it organized for the compiler
+          # Clean up the zip so it doesn't clutter the build
           rm MoltenVK.xcframework.zip
           cd ..
 
-      - name: Build FEX Core
+      - name: Build FEX Core (The Brain)
         run: |
           git clone --recurse-submodules https://github.com/FEX-Emu/FEX.git
           cd FEX
           mkdir Build && cd Build
-          # Compiling FEX for iOS ARM64
+          # Building specifically for the iPhone's ARM64 architecture
           cmake .. -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 -DBUILD_TESTING=OFF
           make -j$(sysctl -n hw.ncpu) FEXCore
           cp libFEXCore.a ../../Frameworks/
@@ -30,7 +30,6 @@ jobs:
       - name: Generate and Build
         run: |
           xcodegen generate
-          # Fix Xcode project versioning
           sed -i '' 's/objectVersion = [0-9]*/objectVersion = 54/g' Chimera.xcodeproj/project.pbxproj
           
           xcodebuild -project Chimera.xcodeproj \
@@ -39,4 +38,5 @@ jobs:
                      -sdk iphoneos \
                      archive -archivePath Chimera.xcarchive \
                      CODE_SIGNING_ALLOWED=NO \
-                     CODE_SIGNING_REQUIRED=NO
+                     CODE_SIGNING_REQUIRED=NO \
+                     AD_HOC_CODE_SIGNING_ALLOWED=YES
