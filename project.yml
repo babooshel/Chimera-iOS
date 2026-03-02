@@ -1,7 +1,7 @@
 name: Chimera
 options:
   bundleIdPrefix: com.baboo
-  xcodeVersion: "15.0" # Matches the Cloud Mac (macos-14 uses Xcode 15)
+  xcodeVersion: "15.0"
 targets:
   Chimera:
     type: application
@@ -16,10 +16,7 @@ targets:
       PRODUCT_BUNDLE_IDENTIFIER: com.baboo.chimera
       INFOPLIST_FILE: Chimera/Info.plist
       GENERATE_INFOPLIST_FILE: NO
-      # Tell the app where to look for the FEX library (.a file)
       LIBRARY_SEARCH_PATHS: $(inherited) $(PROJECT_DIR)/Frameworks
-      # Force link the FEX brain and necessary system libraries
       OTHER_LDFLAGS: $(inherited) -lFEXCore -lsqlite3 -lz
-      # Required for JIT/StikDebug visibility
       ENABLE_BITCODE: NO
       SWIFT_VERSION: 5.0
