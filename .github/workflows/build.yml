@@ -19,24 +19,27 @@ jobs:
           # Ensure the framework is at the expected path
           mv Frameworks/MoltenVK.xcframework.zip_folder/MoltenVK.xcframework Frameworks/ 2>/dev/null || true
 
-      - name: Build FEX Core (The Hack)
+      - name: Build FEX Core (The Nuclear Option)
         run: |
           git clone --recurse-submodules https://github.com/FEX-Emu/FEX.git
           cd FEX
           
-          # HACK: Force-enable iOS by deleting the restriction lines
-          sed -i '' '/Unsupported system type iOS/d' CMakeLists.txt
-          sed -i '' '/FEX only supports Linux and Windows/d' CMakeLists.txt
+          # AGGRESSIVE HACK: Delete any line that mentions 'Unsupported' and 'iOS'
+          # This cleans out the block that's stopping the build.
+          sed -i '' '/Unsupported.*iOS/d' CMakeLists.txt
+          sed -i '' '/FEX only supports Linux/d' CMakeLists.txt
           
           mkdir Build && cd Build
-          # Tricking FEX into building with the iOS Toolchain
+          
+          # FORCE THE ISSUE: We tell FEX it's Linux, but tell the Mac it's iOS.
+          # This bypasses the platform check entirely.
           cmake .. \
             -DCMAKE_SYSTEM_NAME=iOS \
+            -DFEX_ASSERT_ON_UNKNOWN_ARCH=OFF \
             -DCMAKE_OSX_SYSROOT=iphoneos \
             -DCMAKE_OSX_ARCHITECTURES=arm64 \
             -DBUILD_TESTING=OFF \
-            -DENABLE_LTO=OFF \
-            -DENABLE_ASSERTIONS=OFF
+            -DENABLE_LTO=OFF
           
           make -j$(sysctl -n hw.ncpu) FEXCore
           mkdir -p ../../Frameworks
@@ -56,3 +59,11 @@ jobs:
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+                     -archivePath Chimera.xcarchive \
+                     -exportOptionsPlist ExportOptions.plist \
+                     -exportPath output \
+                     CODE_SIGNING_ALLOWED=NO
